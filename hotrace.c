@@ -6,49 +6,13 @@
 /*   By: pnielly <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/10 21:13:49 by pnielly           #+#    #+#             */
-/*   Updated: 2021/12/11 13:29:41 by pnielly          ###   ########.fr       */
+/*   Updated: 2021/12/12 14:13:19 by pnielly          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "hotrace.h"
 
-#include "utils.c"
-
-#define BUF_SIZE 1000
-#define TAB_SIZE 10000
-
-/**
- * if research_mode == 0 : store the keyword-value pair
- * if research_mode == 1 : research the keyword-value pair
- * if get_value == 0 : set the keyword
- * if get_value == 1 : set the value
- *
- * pos == position in tab / tab2
- * free == 1 : need to free tab2[hot.pos] because overwriting data
- **/
-typedef struct s_hot
-{
-	int	research_mode;
-	int	get_value;
-	int	pos;
-	int	free;
-}	t_hot;
-
-int	ft_len(char *s);
-
-void	ft_putstr(char *s);
-
-void	*ft_calloc(size_t count, size_t size);
-
-int	ft_abs(int nbr);
-
-char	*ft_itoa(int n);
-
-int	ft_strcmp(char *s, char *d);
-
-char *ft_strdup(char *s);
+#define TAB_SIZE 20000000
 
 /**
  * Hashing function
@@ -57,17 +21,12 @@ char *ft_strdup(char *s);
  **/
 unsigned int	ft_hash(char *s)
 {
-	unsigned int ret = 0;
-	int	i = 0;
+	unsigned int	ret;
 
+	ret = 54;
 	while (*s)
-	{
-		if (i++ % 2)
-			ret += *s++;
-		else
-			ret -= *s++;
-	}
-	return (ft_abs(ret));
+		ret = ret * 13 + *s++;
+	return (ret % TAB_SIZE);
 }
 
 /**
@@ -115,46 +74,24 @@ void	ft_research_mode(t_hot hot, char **tab, char **tab2, char *buf)
 	while (ft_strcmp(tab[hot.pos], buf) && tab[hot.pos])
 		hot.pos++;
 	if (!ft_strcmp(tab[hot.pos], buf))
+	{
 		ft_putstr(tab2[hot.pos]);
+		ft_putstr("\n");
+	}
 	else
 	{
-		write(1, buf, ft_len(buf) - 1);
+		write(1, buf, ft_len(buf));
 		ft_putstr(": Not found.\n");
 	}
 }
 
 /**
- * main()
- * 1. tab will store the keywords
- * 2. tab2 will store the values (located at the same position)
- * 3. Both tabs are initialized to 0
- **/ 
-int	main(void)
+ * free tab and tab2
+ **/
+static void	free_all(char **tab, char **tab2)
 {
-	char	buf[BUF_SIZE];
 	int	r;
-	t_hot	hot;
-	char	**tab = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
-	char	**tab2 = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
 
-	hot.research_mode = 0;
-	hot.get_value = 0;
-	hot.free = 0;
-	while ((r = read(0, buf, BUF_SIZE - 1)) > 0)
-	{
-		if (r <= 0)
-			return (1);
-		buf[r] = 0;
-		if (buf[0] == '\n' && buf[1] == 0)
-		{
-			hot.research_mode = 1;
-			continue ;
-		}
-		if (!hot.research_mode)
-			ft_storing_mode(&hot, tab, tab2, buf);
-		else
-			ft_research_mode(hot, tab, tab2, buf);
-	}
 	r = -1;
 	while (++r <= TAB_SIZE)
 	{
@@ -165,6 +102,40 @@ int	main(void)
 	}
 	free(tab);
 	free(tab2);
-	system("leaks hotrace");
+}
+
+/**
+ * main()
+ * 1. tab will store the keywords
+ * 2. tab2 will store the values (located at the same position)
+ * 3. Both tabs are initialized to 0
+ **/
+int	main(void)
+{
+	char	*buf;
+	t_hot	*hot;
+	char	**tab;
+	char	**tab2;
+
+	tab = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
+	tab2 = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
+	hot = (t_hot *)malloc(sizeof(t_hot));
+	if (!hot)
+		return (-1);
+	init_hot(hot);
+	while ((get_next_line(0, &buf)) > 0)
+	{
+		if (buf[0] == 0)
+		{
+			hot->research_mode = 1;
+			continue ;
+		}
+		if (!hot->research_mode)
+			ft_storing_mode(hot, tab, tab2, buf);
+		else
+			ft_research_mode(*hot, tab, tab2, buf);
+	}
+	free_all(tab, tab2);
+	system("leaks ./hotrace");
 	return (0);
 }

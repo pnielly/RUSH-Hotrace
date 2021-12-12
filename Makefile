@@ -6,7 +6,7 @@
 #    By: pnielly <marvin@42.fr>                     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/12/10 20:59:10 by pnielly           #+#    #+#              #
-#    Updated: 2021/12/11 13:28:50 by pnielly          ###   ########.fr        #
+#    Updated: 2021/12/12 12:53:14 by pnielly          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,10 @@ CC=cc
 FLAGS=-Wall -Wextra -Werror
 
 #----- SRCS
-SRCS=hotrace.c
+SRCS=hotrace.c utils.c utils2.c get_next_line.c
+
+#----- INC
+INC=hotrace.h
 
 #----- OBJS
 OBJS=$(SRCS:.c=.o)
