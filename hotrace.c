@@ -6,13 +6,11 @@
 /*   By: pnielly <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/10 21:13:49 by pnielly           #+#    #+#             */
-/*   Updated: 2021/12/12 14:13:19 by pnielly          ###   ########.fr       */
+/*   Updated: 2021/12/12 16:45:39 by pnielly          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "hotrace.h"
-
-#define TAB_SIZE 20000000
 
 /**
  * Hashing function
@@ -40,23 +38,14 @@ void	ft_storing_mode(t_hot *hot, char **tab, char **tab2, char *buf)
 	if (!hot->get_value)
 	{
 		hot->pos = ft_hash(buf);
-		if (tab[hot->pos] && !ft_strcmp(buf, tab[hot->pos]))
-			hot->free = 1;
-		else
-		{
-			while (tab[hot->pos])
-				hot->pos++;
-			tab[hot->pos] = ft_strdup(buf);
-		}
+		while (tab[hot->pos])
+			hot->pos++;
+		tab[hot->pos] = ft_strdup(buf);
 		hot->get_value = 1;
 	}
 	else
 	{
-		if (hot->free)
-		{
-			free(tab2[hot->pos]);
-			hot->free = 0;
-		}
+		free(tab2[hot->pos]);
 		tab2[hot->pos] = ft_strdup(buf);
 		hot->get_value = 0;
 	}
@@ -71,9 +60,9 @@ void	ft_storing_mode(t_hot *hot, char **tab, char **tab2, char *buf)
 void	ft_research_mode(t_hot hot, char **tab, char **tab2, char *buf)
 {
 	hot.pos = ft_hash(buf);
-	while (ft_strcmp(tab[hot.pos], buf) && tab[hot.pos])
+	while (tab[hot.pos] && ft_strcmp(tab[hot.pos], buf))
 		hot.pos++;
-	if (!ft_strcmp(tab[hot.pos], buf))
+	if (tab[hot.pos] && !ft_strcmp(tab[hot.pos], buf))
 	{
 		ft_putstr(tab2[hot.pos]);
 		ft_putstr("\n");
@@ -85,23 +74,12 @@ void	ft_research_mode(t_hot hot, char **tab, char **tab2, char *buf)
 	}
 }
 
-/**
- * free tab and tab2
- **/
-static void	free_all(char **tab, char **tab2)
+void	ft_control(t_hot *hot, char **tab, char **tab2, char *buf)
 {
-	int	r;
-
-	r = -1;
-	while (++r <= TAB_SIZE)
-	{
-		if (tab[r])
-			free(tab[r]);
-		if (tab2[r])
-			free(tab2[r]);
-	}
-	free(tab);
-	free(tab2);
+	if (!hot->research_mode)
+		ft_storing_mode(hot, tab, tab2, buf);
+	else
+		ft_research_mode(*hot, tab, tab2, buf);
 }
 
 /**
@@ -120,7 +98,7 @@ int	main(void)
 	tab = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
 	tab2 = (char **)ft_calloc(TAB_SIZE, sizeof(char *));
 	hot = (t_hot *)malloc(sizeof(t_hot));
-	if (!hot)
+	if (!hot || !tab || !tab2)
 		return (-1);
 	init_hot(hot);
 	while ((get_next_line(0, &buf)) > 0)
@@ -128,14 +106,13 @@ int	main(void)
 		if (buf[0] == 0)
 		{
 			hot->research_mode = 1;
+			free(buf);
 			continue ;
 		}
-		if (!hot->research_mode)
-			ft_storing_mode(hot, tab, tab2, buf);
-		else
-			ft_research_mode(*hot, tab, tab2, buf);
+		ft_control(hot, tab, tab2, buf);
+		free(buf);
+		buf = NULL;
 	}
-	free_all(tab, tab2);
-	system("leaks ./hotrace");
+	free_all(tab, tab2, hot);
 	return (0);
 }

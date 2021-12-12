@@ -6,7 +6,7 @@
 /*   By: pnielly <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/11 14:40:51 by pnielly           #+#    #+#             */
-/*   Updated: 2021/12/12 13:17:50 by pnielly          ###   ########.fr       */
+/*   Updated: 2021/12/12 16:44:44 by pnielly          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,16 @@
 # include <unistd.h>
 # include <stdlib.h>
 
+# define TAB_SIZE 20000000
+
 typedef struct s_hot {
 	int	research_mode;
 	int	get_value;
 	int	pos;
 	int	free;
 }	t_hot;
+
+void	free_all(char **tab, char **tab2, t_hot *hot);
 
 void	init_hot(t_hot *hot);
 

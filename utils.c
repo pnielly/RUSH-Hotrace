@@ -6,24 +6,25 @@
 /*   By: pnielly <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/11 12:47:42 by pnielly           #+#    #+#             */
-/*   Updated: 2021/12/12 12:59:03 by pnielly          ###   ########.fr       */
+/*   Updated: 2021/12/12 16:38:03 by pnielly          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "hotrace.h"
 
+void	*ft_memset(void *dest, int val, size_t len)
+{
+	unsigned char	*ptr;
+
+	ptr = (unsigned char *)dest;
+	while (len-- > 0)
+		*ptr++ = val;
+	return (dest);
+}
+
 void	ft_bzero(void *s, size_t n)
 {
-	size_t	i;
-
-	if (!s)
-		return ;
-	i = 0;
-	while (i < n)
-	{
-		*(char *)(s + i) = 0;
-		i++;
-	}
+	ft_memset(s, 0, n);
 }
 
 void	*ft_calloc(size_t count, size_t size)
@@ -31,9 +32,8 @@ void	*ft_calloc(size_t count, size_t size)
 	void	*ptr;
 
 	ptr = (void *)malloc(count * size);
-	if (!ptr)
-		return (NULL);
-	ft_bzero(ptr, count);
+	if (ptr)
+		ft_bzero(ptr, count * size);
 	return (ptr);
 }
 
